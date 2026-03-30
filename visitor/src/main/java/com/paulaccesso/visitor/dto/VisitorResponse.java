@@ -1,3 +1,4 @@
+// File: visitor/src/main/java/com/paulaccesso/visitor/dto/VisitorResponse.java
 package com.paulaccesso.visitor.dto;
 
 import lombok.Data;
@@ -16,6 +17,7 @@ public class VisitorResponse {
     private String photo;
     private String checkoutPhoto;
     private String idProof;
+    private String tagNumber; // NEW FIELD
     private LocalDateTime checkInTime;
     private LocalDateTime checkOutTime;
     private boolean active;

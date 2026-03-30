@@ -21,35 +21,48 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-    
+
+    // Update JwtAuthenticationFilter.java
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = getTokenFromRequest(request);
-            
-            if (StringUtils.hasText(token) && jwtService.validateToken(token)) {
-                String email = jwtService.getEmailFromToken(token);
-                
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            if (StringUtils.hasText(token)) {
+                try {
+                    if (jwtService.validateToken(token)) {
+                        String email = jwtService.getEmailFromToken(token);
+
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    } else {
+                        log.warn("Invalid JWT token received");
+                        // Don't throw exception, just don't set authentication
+                    }
+                } catch (Exception e) {
+                    log.error("Error validating token: {}", e.getMessage());
+                    // Clear any existing authentication
+                    SecurityContextHolder.clearContext();
+                }
             }
         } catch (Exception e) {
             log.error("Cannot set user authentication: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
         }
-        
+
         filterChain.doFilter(request, response);
     }
-    
+
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {

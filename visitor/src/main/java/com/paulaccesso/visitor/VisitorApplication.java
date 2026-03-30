@@ -11,7 +11,7 @@ public class VisitorApplication {
         SpringApplication.run(VisitorApplication.class, args);
         System.out.println("========================================");
         System.out.println("Visitor Management System Started!");
-        System.out.println("API URL: http://localhost:8080/api");
+        // System.out.println("API URL: http://localhost:8598/api");
         System.out.println("========================================");
     }
 }

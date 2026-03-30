@@ -1,8 +1,10 @@
+// File: visitor/src/main/java/com/paulaccesso/visitor/controller/MeetingStatusController.java
 package com.paulaccesso.visitor.controller;
 
 import com.paulaccesso.visitor.dto.VisitorResponse;
 import com.paulaccesso.visitor.service.VisitorService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class MeetingStatusController {
     
     private final VisitorService visitorService;
@@ -24,7 +27,12 @@ public class MeetingStatusController {
         try {
             VisitorResponse response = visitorService.updateMeetingStatus(id, status);
             
-            // Simple HTML response
+            // Null safety
+            String name = response != null && response.getName() != null ? response.getName() : "Visitor";
+            String mobile = response != null && response.getMobile() != null ? response.getMobile() : "N/A";
+            String purpose = response != null && response.getPurpose() != null ? response.getPurpose() : "N/A";
+            String safeStatus = status != null ? status : "UPDATED";
+            
             return "<!DOCTYPE html>\n" +
                    "<html>\n" +
                    "<head>\n" +
@@ -65,11 +73,11 @@ public class MeetingStatusController {
                    "<body>\n" +
                    "    <div class=\"container\">\n" +
                    "        <div class=\"success\">✓</div>\n" +
-                   "        <h1>Meeting Request " + status + "</h1>\n" +
-                   "        <p><strong>Visitor:</strong> " + response.getName() + "</p>\n" +
-                   "        <p><strong>Mobile:</strong> " + response.getMobile() + "</p>\n" +
-                   "        <p><strong>Purpose:</strong> " + response.getPurpose() + "</p>\n" +
-                   "        <p><strong>Status:</strong> <strong style='color: #10b981'>" + status + "</strong></p>\n" +
+                   "        <h1>Meeting Request " + escapeHtml(safeStatus) + "</h1>\n" +
+                   "        <p><strong>Visitor:</strong> " + escapeHtml(name) + "</p>\n" +
+                   "        <p><strong>Mobile:</strong> " + escapeHtml(mobile) + "</p>\n" +
+                   "        <p><strong>Purpose:</strong> " + escapeHtml(purpose) + "</p>\n" +
+                   "        <p><strong>Status:</strong> <strong style='color: #10b981'>" + escapeHtml(safeStatus) + "</strong></p>\n" +
                    "        <p>The visitor has been notified.</p>\n" +
                    "        <button class=\"btn\" onclick=\"window.close()\">Close Window</button>\n" +
                    "    </div>\n" +
@@ -77,6 +85,10 @@ public class MeetingStatusController {
                    "</html>";
             
         } catch (Exception e) {
+            log.error("Error updating meeting status for visitor {}: {}", id, e.getMessage(), e);
+            
+            String errorMessage = e.getMessage() != null ? e.getMessage() : "Unknown error occurred";
+            
             return "<!DOCTYPE html>\n" +
                    "<html>\n" +
                    "<head>\n" +
@@ -99,18 +111,40 @@ public class MeetingStatusController {
                    "            max-width: 500px;\n" +
                    "        }\n" +
                    "        .error { color: #dc2626; font-size: 64px; }\n" +
+                   "        .btn {\n" +
+                   "            background: #2563eb;\n" +
+                   "            color: white;\n" +
+                   "            padding: 10px 20px;\n" +
+                   "            border: none;\n" +
+                   "            border-radius: 5px;\n" +
+                   "            cursor: pointer;\n" +
+                   "            font-size: 14px;\n" +
+                   "            margin-top: 20px;\n" +
+                   "        }\n" +
+                   "        .btn:hover { background: #1d4ed8; }\n" +
                    "    </style>\n" +
                    "</head>\n" +
                    "<body>\n" +
                    "    <div class=\"container\">\n" +
                    "        <div class=\"error\">✗</div>\n" +
                    "        <h1>Error</h1>\n" +
-                   "        <p>" + e.getMessage() + "</p>\n" +
+                   "        <p>" + escapeHtml(errorMessage) + "</p>\n" +
                    "        <p>Please contact the reception desk.</p>\n" +
                    "        <button class=\"btn\" onclick=\"window.close()\">Close</button>\n" +
                    "    </div>\n" +
                    "</body>\n" +
                    "</html>";
         }
+    }
+    
+    private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&#39;");
     }
 }

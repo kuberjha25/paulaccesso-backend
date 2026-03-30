@@ -1,3 +1,4 @@
+// File: visitor/src/main/java/com/paulaccesso/visitor/dto/VisitorRequest.java
 package com.paulaccesso.visitor.dto;
 
 import jakarta.validation.constraints.Email;
@@ -20,11 +21,12 @@ public class VisitorRequest {
     private String address;
 
     @NotBlank(message = "Person to meet is required")
-    private String personToMeet; // This will be the email of the person they want to meet
+    private String personToMeet;
     
     @NotBlank(message = "Purpose is required")
     private String purpose;
     
     private String photo;
     private String idProof;
+    private String tagNumber; // NEW FIELD - optional initially
 }

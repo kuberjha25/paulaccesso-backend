@@ -30,14 +30,34 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/users/employees").permitAll()
+
+                        // ✅ PUBLIC APIs
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/employees").permitAll()
+
+                        // ✅ EMAIL LINKS
+                        .requestMatchers("/api/visitors/*/meeting-status").permitAll()
+
+                        // ✅ STATIC FILES (React build)
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/*.png",
+                                "/*.jpg",
+                                "/*.jpeg",
+                                "/*.svg",
+                                "/*.ico",
+                                "/favicon.ico"
+                        ).permitAll()
+
+                        // ✅ SPRING ERROR
                         .requestMatchers("/error").permitAll()
 
-                        // Email link endpoints - allow all HTTP methods
-                        .requestMatchers("/visitors/*/meeting-status").permitAll()
-                        .anyRequest().authenticated())
+                        // 🔒 all secure
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -46,13 +66,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
+
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }

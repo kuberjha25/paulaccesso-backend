@@ -1,3 +1,4 @@
+// File: visitor/src/main/java/com/paulaccesso/visitor/entity/Visitor.java
 package com.paulaccesso.visitor.entity;
 
 import jakarta.persistence.*;
@@ -40,13 +41,16 @@ public class Visitor {
     private String purpose;
 
     @Column(columnDefinition = "LONGTEXT")
-    private String photo; // Visitor check-in photo
+    private String photo;
     
     @Column(columnDefinition = "LONGTEXT")
-    private String checkoutPhoto; // Visitor checkout photo
+    private String checkoutPhoto;
     
     @Column(columnDefinition = "LONGTEXT")
     private String idProof;
+
+    @Column(name = "tag_number", unique = true)
+    private String tagNumber; // NEW FIELD
 
     @Column(name = "check_in_time", nullable = false)
     private LocalDateTime checkInTime;

@@ -21,7 +21,7 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    @Value("${app.base-url:http://localhost:8080}")
+    @Value("${app.base-url:}")
     private String baseUrl;
 
     public void sendOtpEmail(String to, String otp) {
@@ -66,11 +66,17 @@ public class EmailService {
                     "</html>";
 
             helper.setText(htmlContent, true);
-            mailSender.send(message);
+            // mailSender.send(message);
+            try {
+                mailSender.send(message);
+                log.info("OTP email sent successfully to: {}", to);
+            } catch (Exception e) {
+                log.error("Email failed but continuing flow", e);
+            }
             log.info("OTP email sent successfully to: {}", to);
         } catch (MessagingException e) {
             log.error("Failed to send OTP email to: {}", to, e);
-            throw new RuntimeException("Failed to send OTP email", e);
+            // throw new RuntimeException("Failed to send OTP email", e);
         }
     }
 
@@ -222,7 +228,13 @@ public class EmailService {
                     "</html>";
 
             helper.setText(htmlContent, true);
-            mailSender.send(message);
+            // mailSender.send(message);
+            try {
+                mailSender.send(message);
+                log.info("OTP email sent successfully to: {}", employee.getEmail());
+            } catch (Exception e) {
+                log.error("Email failed but continuing flow", e);
+            }
             log.info("Visitor notification sent to: {}", employee.getEmail());
         } catch (MessagingException e) {
             log.error("Failed to send visitor notification to: {}", employee.getEmail(), e);
@@ -320,7 +332,13 @@ public class EmailService {
                     "</html>";
 
             helper.setText(htmlContent, true);
-            mailSender.send(message);
+            // mailSender.send(message);
+            try {
+                mailSender.send(message);
+                log.info("OTP email sent successfully to: {}", visitor.getEmail());
+            } catch (Exception e) {
+                log.error("Email failed but continuing flow", e);
+            }
             log.info("Meeting status update sent to: {}", visitor.getEmail());
         } catch (MessagingException e) {
             log.error("Failed to send meeting status update to: {}", visitor.getEmail(), e);
