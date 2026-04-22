@@ -30,33 +30,42 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
                         // ✅ PUBLIC APIs
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/users/employees").permitAll()
-
+                        
                         // ✅ EMAIL LINKS
                         .requestMatchers("/api/visitors/*/meeting-status").permitAll()
-
+                        
+                        // ✅ REACT ROUTES - Add these lines
+                        .requestMatchers("/", "/index.html").permitAll()
+                        .requestMatchers("/register", "/log", "/admin").permitAll()
+                        .requestMatchers("/dashboard", "/visitors", "/settings").permitAll()
+                        
                         // ✅ STATIC FILES (React build)
                         .requestMatchers(
-                                "/",
-                                "/index.html",
                                 "/assets/**",
+                                "/static/**",
                                 "/*.png",
                                 "/*.jpg",
                                 "/*.jpeg",
                                 "/*.svg",
                                 "/*.ico",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/*.js",
+                                "/*.css",
+                                "/manifest.json"
                         ).permitAll()
-
+                        
                         // ✅ SPRING ERROR
                         .requestMatchers("/error").permitAll()
-
-                        // 🔒 all secure
-                        .anyRequest().authenticated()
+                        
+                        // 🔒 all other API requests need authentication
+                        .requestMatchers("/api/**").authenticated()
+                        
+                        // 🔒 any other request
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -66,15 +75,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
+        
         return source;
     }
 }

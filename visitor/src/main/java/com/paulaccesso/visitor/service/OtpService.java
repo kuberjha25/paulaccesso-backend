@@ -32,7 +32,7 @@ public class OtpService {
 
     // Hardcoded OTP for test accounts
     private static final String TEST_OTP = "246810";
-    private static final List<String> TEST_EMAILS = Arrays.asList("test@pml.com", "kuber@pml.com", "admin@pml.com");
+    private static final List<String> TEST_EMAILS = Arrays.asList("test@pml.com", "kuber@pml.com", "admin@pml.com","kuber98jha@gmail.com");
 
     @Transactional
     public String generateAndSendOtp(String email) {
