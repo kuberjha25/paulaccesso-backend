@@ -25,20 +25,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    // Update JwtAuthenticationFilter.java
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = getTokenFromRequest(request);
 
             if (StringUtils.hasText(token)) {
                 try {
                     if (jwtService.validateToken(token)) {
-                        String email = jwtService.getEmailFromToken(token);
+                        String empId = jwtService.getEmpIdFromToken(token);
 
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(empId);
 
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
@@ -47,11 +46,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     } else {
                         log.warn("Invalid JWT token received");
-                        // Don't throw exception, just don't set authentication
                     }
                 } catch (Exception e) {
                     log.error("Error validating token: {}", e.getMessage());
-                    // Clear any existing authentication
                     SecurityContextHolder.clearContext();
                 }
             }

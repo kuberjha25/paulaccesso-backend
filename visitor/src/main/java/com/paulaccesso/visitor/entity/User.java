@@ -21,17 +21,30 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+    @Column(name = "emp_id", unique = true, nullable = false)
+    private String empId;
 
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String email;
+
+    @Column(name = "location_state")
+    private String locationState;
+
     private String designation;
-    
+
+    private String department;
+
+    private String company;
+
+    @Column(name = "mobile")
+    private String mobile;
+
     @Column(columnDefinition = "LONGTEXT")
-    private String photo; // Employee profile photo
-    
+    private String photo;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.EMPLOYEE;

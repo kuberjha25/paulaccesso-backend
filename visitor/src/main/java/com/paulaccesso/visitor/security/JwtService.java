@@ -26,8 +26,9 @@ public class JwtService {
 
     public String generateAccessToken(User user) {
         return JWT.create()
-                .withSubject(user.getEmail())
+                .withSubject(user.getEmpId())
                 .withClaim("userId", user.getId())
+                .withClaim("empId", user.getEmpId())
                 .withClaim("role", user.getRole().toString())
                 .withIssuedAt(new Date())
                 .withExpiresAt(Date.from(Instant.now().plus(expiration, ChronoUnit.MILLIS)))
@@ -36,14 +37,14 @@ public class JwtService {
 
     public String generateRefreshToken(User user) {
         return JWT.create()
-                .withSubject(user.getEmail())
+                .withSubject(user.getEmpId())
                 .withClaim("userId", user.getId())
                 .withIssuedAt(new Date())
                 .withExpiresAt(Date.from(Instant.now().plus(refreshExpiration, ChronoUnit.MILLIS)))
                 .sign(Algorithm.HMAC256(secret));
     }
 
-    public String getEmailFromToken(String token) {
+    public String getEmpIdFromToken(String token) {
         DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secret))
                 .build()
                 .verify(token);

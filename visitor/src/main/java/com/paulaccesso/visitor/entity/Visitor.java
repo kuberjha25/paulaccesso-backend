@@ -26,7 +26,7 @@ public class Visitor {
     @Column(nullable = false)
     private String mobile;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String email;
 
     private String company;

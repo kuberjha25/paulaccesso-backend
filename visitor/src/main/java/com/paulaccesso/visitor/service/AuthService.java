@@ -20,22 +20,18 @@ public class AuthService {
     private final OtpService otpService;
     private final JwtService jwtService;
 
-    // Update AuthService.java
     @Transactional
-    public void sendLoginOtp(String email) {
+    public void sendLoginOtp(String empId) {
         try {
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            User user = userRepository.findLoginUserByEmpId(empId)
+                    .orElseThrow(() -> new RuntimeException("User not found with EmpId: " + empId));
 
-            if (user.getRole() != Role.ADMIN && user.getRole() != Role.RECEPTIONIST) {
-                throw new RuntimeException("Access denied. Only admin and receptionist can login.");
-            }
-
-            otpService.generateAndSendOtp(email);
+            otpService.generateAndSendOtp(user.getEmail());
+            log.info("OTP sent to: {} ({})", user.getEmail(), user.getEmpId());
 
         } catch (RuntimeException e) {
             log.error("Error in sendLoginOtp: {}", e.getMessage());
-            throw e; // Re-throw to be handled by global exception handler
+            throw e;
         } catch (Exception e) {
             log.error("Unexpected error in sendLoginOtp: ", e);
             throw new RuntimeException("Failed to send OTP. Please try again later.");
@@ -43,18 +39,14 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponse verifyOtpAndLogin(String email, String otp) {
-        boolean isValid = otpService.verifyOtp(email, otp);
+    public AuthResponse verifyOtpAndLogin(String empId, String otp) {
+        User user = userRepository.findLoginUserByEmpId(empId)
+                .orElseThrow(() -> new RuntimeException("User not found with EmpId: " + empId));
+
+        boolean isValid = otpService.verifyOtp(user.getEmail(), otp);
 
         if (!isValid) {
             throw new RuntimeException("Invalid or expired OTP");
-        }
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getRole() != Role.ADMIN && user.getRole() != Role.RECEPTIONIST) {
-            throw new RuntimeException("Access denied");
         }
 
         String accessToken = jwtService.generateAccessToken(user);
@@ -62,13 +54,14 @@ public class AuthService {
 
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
+        userDto.setEmpId(user.getEmpId());
         userDto.setEmail(user.getEmail());
         userDto.setName(user.getName());
         userDto.setDesignation(user.getDesignation());
         userDto.setPhoto(user.getPhoto());
         userDto.setRole(user.getRole().toString());
 
-        log.info("User logged in: {} ({})", email, user.getRole());
+        log.info("User logged in: {} ({}) with EmpId: {}", user.getEmail(), user.getRole(), user.getEmpId());
 
         return new AuthResponse(accessToken, refreshToken, "Bearer", userDto);
     }

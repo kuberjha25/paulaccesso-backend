@@ -10,8 +10,7 @@ public class VisitorApplication {
     public static void main(String[] args) {
         SpringApplication.run(VisitorApplication.class, args);
         System.out.println("========================================");
-        System.out.println("Visitor Management System Started!");
-        // System.out.println("API URL: http://localhost:8598/api");
+        System.out.println("Kuber!");
         System.out.println("========================================");
     }
 }

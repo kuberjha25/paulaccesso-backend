@@ -1,4 +1,3 @@
-// File: visitor/src/main/java/com/paulaccesso/visitor/dto/VisitorRequest.java
 package com.paulaccesso.visitor.dto;
 
 import jakarta.validation.constraints.Email;
@@ -13,7 +12,6 @@ public class VisitorRequest {
     @NotBlank(message = "Mobile is required")
     private String mobile;
 
-    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 
@@ -21,12 +19,12 @@ public class VisitorRequest {
     private String address;
 
     @NotBlank(message = "Person to meet is required")
-    private String personToMeet;
-    
+    private String personToMeetEmpId;
+
     @NotBlank(message = "Purpose is required")
     private String purpose;
-    
+
     private String photo;
     private String idProof;
-    private String tagNumber; // NEW FIELD - optional initially
+    private String tagNumber;
 }
