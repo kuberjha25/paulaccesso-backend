@@ -4,6 +4,11 @@ import com.paulaccesso.visitor.entity.User;
 import com.paulaccesso.visitor.entity.Visitor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -133,6 +138,9 @@ public class EmailService {
                     "</div>";
         }
 
+        ZonedDateTime istTime = visitor.getCheckInTime().atZone(ZoneId.of("Asia/Kolkata"));
+        String formattedTime = istTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+
         return "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
@@ -191,7 +199,7 @@ public class EmailService {
                 "                <div class=\"info-item\"><span class=\"info-label\">🎯 Purpose:</span> <span class=\"info-value\">"
                 + visitor.getPurpose() + "</span></div>\n" +
                 "                <div class=\"info-item\"><span class=\"info-label\">⏰ Check-in:</span> <span class=\"info-value\">"
-                + visitor.getCheckInTime().toString() + "</span></div>\n" +
+                + formattedTime + "</span></div>\n" +
                 "                <div class=\"info-item\"><span class=\"info-label\">📌 Status:</span> <span class=\"info-value\"><span class=\"status-badge\">Pending Approval</span></span></div>\n"
                 +
                 "            </div>\n" +

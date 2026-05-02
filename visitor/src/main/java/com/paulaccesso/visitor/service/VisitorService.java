@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,8 +64,16 @@ public class VisitorService {
             TagNumber tagNumber = tagNumberRepository.findByTagNumber(request.getTagNumber())
                     .orElseThrow(() -> new RuntimeException("Tag number not found"));
 
+            // Check if tag is available
             if (!tagNumber.isAvailable()) {
                 throw new RuntimeException("Tag number is already assigned to another visitor");
+            }
+
+            // ✅ Additional safety check - ensure no active visitor has this tag
+            Visitor existingVisitor = visitorRepository.findActiveVisitorByTagNumber(request.getTagNumber());
+            if (existingVisitor != null) {
+                throw new RuntimeException(
+                        "Tag number is already assigned to an active visitor: " + existingVisitor.getName());
             }
 
             tagNumberRepository.assignTagToVisitor(request.getTagNumber(), null);
@@ -180,8 +190,10 @@ public class VisitorService {
         }
 
         if (visitor.getTagNumber() != null && !visitor.getTagNumber().isEmpty()) {
-            tagNumberRepository.releaseTag(visitor.getTagNumber());
-            log.info("Tag {} released from visitor: {}", visitor.getTagNumber(), visitor.getName());
+            String tagNumber = visitor.getTagNumber(); // Store tag number before clearing
+            tagNumberRepository.releaseTag(tagNumber);
+            visitor.setTagNumber(null); // ✅ CRITICAL FIX: Clear the tag number from visitor record
+            log.info("Tag {} released from visitor: {}", tagNumber, visitor.getName());
         }
 
         Visitor updatedVisitor = visitorRepository.save(visitor);
@@ -258,8 +270,12 @@ public class VisitorService {
         response.setCheckoutPhoto(visitor.getCheckoutPhoto());
         response.setIdProof(visitor.getIdProof());
         response.setTagNumber(visitor.getTagNumber());
+
+        // ✅ REMOVE these conversions - they're not needed
+        // Database already stores in IST because of timezone settings
         response.setCheckInTime(visitor.getCheckInTime());
         response.setCheckOutTime(visitor.getCheckOutTime());
+
         response.setActive(visitor.isActive());
         response.setMeetingStatus(
                 visitor.getMeetingStatus() != null ? visitor.getMeetingStatus().toString() : "PENDING");
